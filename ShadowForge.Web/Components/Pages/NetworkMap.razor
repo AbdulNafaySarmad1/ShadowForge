@@ -1,0 +1,67 @@
+@* ── Network Map Page ──────────────────────────────────────────────── *@
+@page "/network"
+@rendermode InteractiveServer
+@inject DashboardStateService State
+@implements IDisposable
+
+<PageTitle>ShadowForge — Network Map</PageTitle>
+
+<div class="sf-page">
+    <div class="sf-page-header">
+        <h1 class="sf-page-title">Network Map</h1>
+        <p class="sf-page-sub">Discovered hosts and compromise status</p>
+    </div>
+
+    @if (!State.DiscoveredHosts.Any())
+    {
+        <div class="sf-panel sf-empty-panel">
+            <div class="sf-empty-icon">⬡</div>
+            <div>No hosts discovered yet.</div>
+            <div class="sf-hint">Run the Reconnaissance module to populate the network map.</div>
+        </div>
+    }
+    else
+    {
+        <div class="sf-host-grid">
+            @foreach (var host in State.DiscoveredHosts)
+            {
+                <div class="sf-host-card @(host.IsCompromised ? "sf-host-compromised" : "")">
+                    <div class="sf-host-card-header">
+                        <span class="sf-host-icon">@(host.OperatingSystem == OsType.Windows ? "⊞" : "⬡")</span>
+                        <div>
+                            <div class="sf-host-name">@host.Hostname</div>
+                            <div class="sf-host-ip">@host.IpAddress</div>
+                        </div>
+                        @if (host.IsCompromised)
+                        {
+                            <span class="sf-badge sf-badge-danger">COMPROMISED</span>
+                        }
+                        else
+                        {
+                            <span class="sf-badge sf-badge-idle">SECURE</span>
+                        }
+                    </div>
+                    <div class="sf-host-os">@host.OsVersion</div>
+                    <div class="sf-host-ports">
+                        @foreach (var port in host.OpenPorts.Take(6))
+                        {
+                            <span class="sf-port-badge @(IsDangerPort(port.Port) ? "sf-port-danger" : "")">
+                                @port.Port/@port.Protocol
+                            </span>
+                        }
+                    </div>
+                    <div class="sf-host-threat">
+                        <span class="sf-threat-@host.ThreatScore.ToString().ToLower()">@host.ThreatScore risk</span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized() => State.OnStateChanged += Refresh;
+    private void Refresh() => InvokeAsync(StateHasChanged);
+    public void Dispose() => State.OnStateChanged -= Refresh;
+    private static bool IsDangerPort(int port) => port is 23 or 445 or 3389 or 135 or 139;
+}

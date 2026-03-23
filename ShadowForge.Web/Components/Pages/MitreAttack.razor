@@ -1,0 +1,66 @@
+@page "/mitre"
+@rendermode InteractiveServer
+@inject DashboardStateService State
+@implements IDisposable
+
+<PageTitle>ShadowForge — MITRE ATT&CK</PageTitle>
+
+<div class="sf-page">
+    <div class="sf-page-header">
+        <div>
+            <h1 class="sf-page-title">MITRE ATT&amp;CK Mapping</h1>
+            <p class="sf-page-sub">Techniques observed in this simulation session</p>
+        </div>
+        <a class="sf-btn sf-btn-ghost" href="https://attack.mitre.org" target="_blank">
+            ↗ Full ATT&CK Matrix
+        </a>
+    </div>
+
+    @if (!State.MitreMappings.Any())
+    {
+        <div class="sf-panel sf-empty-panel">
+            <div class="sf-empty-icon">⊞</div>
+            <div>No MITRE techniques mapped yet.</div>
+            <div class="sf-hint">Run a simulation to populate the ATT&CK matrix.</div>
+        </div>
+    }
+    else
+    {
+        <!-- Tactic summary -->
+        <div class="sf-tactic-strip">
+            @foreach (var tactic in State.MitreMappings.GroupBy(m => m.Tactic).OrderBy(g => g.Key))
+            {
+                <div class="sf-tactic-badge">
+                    <span class="sf-tactic-name">@tactic.Key</span>
+                    <span class="sf-tactic-count">@tactic.Count()</span>
+                </div>
+            }
+        </div>
+
+        <!-- Technique cards -->
+        <div class="sf-mitre-grid">
+            @foreach (var mapping in State.MitreMappings.OrderByDescending(m => m.TimesObserved))
+            {
+                <div class="sf-mitre-card sf-threat-border-@mapping.Severity.ToString().ToLower()">
+                    <div class="sf-mitre-card-header">
+                        <a class="sf-mitre-id" href="@mapping.Url" target="_blank">@mapping.TechniqueId</a>
+                        <span class="sf-threat-@mapping.Severity.ToString().ToLower() sf-mitre-sev">@mapping.Severity</span>
+                    </div>
+                    <div class="sf-mitre-name">@mapping.TechniqueName</div>
+                    <div class="sf-mitre-tactic">@mapping.Tactic</div>
+                    <div class="sf-mitre-desc">@mapping.Description</div>
+                    <div class="sf-mitre-footer">
+                        <span class="sf-mitre-obs">Observed @mapping.TimesObserved×</span>
+                        <a class="sf-link-sm" href="@mapping.Url" target="_blank">View in ATT&CK ↗</a>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized() => State.OnStateChanged += Refresh;
+    private void Refresh() => InvokeAsync(StateHasChanged);
+    public void Dispose() => State.OnStateChanged -= Refresh;
+}

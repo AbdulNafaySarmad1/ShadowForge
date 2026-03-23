@@ -1,0 +1,122 @@
+@page "/reports"
+@rendermode InteractiveServer
+@inject DashboardStateService State
+@implements IDisposable
+
+<PageTitle>ShadowForge — Reports</PageTitle>
+
+<div class="sf-page">
+    <div class="sf-page-header">
+        <h1 class="sf-page-title">Simulation Reports</h1>
+        <p class="sf-page-sub">Session summary and findings export</p>
+    </div>
+
+    @if (!State.ModuleResults.Any())
+    {
+        <div class="sf-panel sf-empty-panel">
+            <div class="sf-empty-icon">▤</div>
+            <div>No simulation data yet.</div>
+            <div class="sf-hint">Complete a simulation to generate a report.</div>
+        </div>
+    }
+    else
+    {
+        <!-- Executive summary -->
+        <div class="sf-panel sf-mb">
+            <div class="sf-panel-header"><span>Executive Summary</span></div>
+            <div class="sf-exec-grid">
+                <div class="sf-exec-stat">
+                    <span class="sf-exec-num">@State.TotalEvents</span>
+                    <span class="sf-exec-label">Total Simulated Events</span>
+                </div>
+                <div class="sf-exec-stat">
+                    <span class="sf-exec-num sf-threat-critical">@State.CriticalCount</span>
+                    <span class="sf-exec-label">Critical Severity</span>
+                </div>
+                <div class="sf-exec-stat">
+                    <span class="sf-exec-num sf-threat-high">@State.HighCount</span>
+                    <span class="sf-exec-label">High Severity</span>
+                </div>
+                <div class="sf-exec-stat">
+                    <span class="sf-exec-num">@State.MitreMappings.Count</span>
+                    <span class="sf-exec-label">MITRE Techniques</span>
+                </div>
+                <div class="sf-exec-stat">
+                    <span class="sf-exec-num">@State.HostCount</span>
+                    <span class="sf-exec-label">Hosts Discovered</span>
+                </div>
+                <div class="sf-exec-stat">
+                    <span class="sf-exec-num sf-threat-high">@State.CompromisedCount</span>
+                    <span class="sf-exec-label">Hosts Compromised</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Per-module results -->
+        @foreach (var result in State.ModuleResults)
+        {
+            <div class="sf-panel sf-mb">
+                <div class="sf-panel-header">
+                    <span>@result.ModuleName</span>
+                    <span class="sf-badge @(result.Status == ModuleStatus.Completed ? "sf-badge-ok" : "sf-badge-danger")">
+                        @result.Status
+                    </span>
+                </div>
+                <div class="sf-report-meta">
+                    <span>Duration: <strong>@result.Duration.TotalSeconds.ToString("F2")s</strong></span>
+                    <span>Events: <strong>@result.Events.Count</strong></span>
+                    <span>Peak threat: <strong class="sf-threat-@result.HighestThreatLevel.ToString().ToLower()">@result.HighestThreatLevel</strong></span>
+                </div>
+
+                @if (result.Events.Any())
+                {
+                    <div class="sf-report-events">
+                        @foreach (var evt in result.Events.OrderByDescending(e => e.ThreatLevel).Take(10))
+                        {
+                            <div class="sf-event sf-event-sm">
+                                <span class="sf-threat-@evt.ThreatLevel.ToString().ToLower() sf-event-badge">@evt.ThreatLevel</span>
+                                <span class="sf-event-type">@evt.Type</span>
+                                <span class="sf-event-desc">@evt.Description</span>
+                                @if (evt.MitreTechniqueId is not null)
+                                {
+                                    <a class="sf-mitre-tag" href="https://attack.mitre.org/techniques/@evt.MitreTechniqueId.Replace(".", "/")" target="_blank">@evt.MitreTechniqueId</a>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- MITRE summary table -->
+        @if (State.MitreMappings.Any())
+        {
+            <div class="sf-panel">
+                <div class="sf-panel-header"><span>MITRE ATT&CK Summary</span></div>
+                <table class="sf-table">
+                    <thead>
+                        <tr><th>Technique ID</th><th>Name</th><th>Tactic</th><th>Severity</th><th>Observed</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var m in State.MitreMappings.OrderByDescending(x => x.TimesObserved))
+                        {
+                            <tr>
+                                <td><a class="sf-mitre-tag" href="@m.Url" target="_blank">@m.TechniqueId</a></td>
+                                <td>@m.TechniqueName</td>
+                                <td>@m.Tactic</td>
+                                <td><span class="sf-threat-@m.Severity.ToString().ToLower()">@m.Severity</span></td>
+                                <td>@m.TimesObserved</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    protected override void OnInitialized() => State.OnStateChanged += Refresh;
+    private void Refresh() => InvokeAsync(StateHasChanged);
+    public void Dispose() => State.OnStateChanged -= Refresh;
+}

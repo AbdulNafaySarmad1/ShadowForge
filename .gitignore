@@ -1,0 +1,18 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+
+# Database file (auto-recreates on run)
+*.db
+*.db-shm
+*.db-wal
+
+# Secrets — NEVER commit these
+appsettings.Development.json
+secrets.json
+
+# VS / Rider
+.vs/
+.idea/

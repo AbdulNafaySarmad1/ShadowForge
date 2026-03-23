@@ -1,0 +1,55 @@
+@inherits LayoutComponentBase
+
+<div class="sf-shell">
+    <!-- Sidebar -->
+    <nav class="sf-sidebar">
+        <div class="sf-logo">
+            <span class="sf-logo-icon">⬡</span>
+            <span class="sf-logo-text">ShadowForge</span>
+            <span class="sf-logo-ver">v1.0</span>
+        </div>
+
+        <div class="sf-nav-section">
+            <span class="sf-nav-label">OPERATIONS</span>
+            <NavLink class="sf-nav-item" href="/" Match="NavLinkMatch.All">
+                <span class="sf-nav-icon">◈</span> Dashboard
+            </NavLink>
+            <NavLink class="sf-nav-item" href="/simulation">
+                <span class="sf-nav-icon">▶</span> Run Simulation
+            </NavLink>
+            <NavLink class="sf-nav-item" href="/network">
+                <span class="sf-nav-icon">⬡</span> Network Map
+            </NavLink>
+        </div>
+
+        <div class="sf-nav-section">
+            <span class="sf-nav-label">INTELLIGENCE</span>
+            <NavLink class="sf-nav-item" href="/threatintel">
+                <span class="sf-nav-icon">◉</span> Threat Intel
+            </NavLink>
+            <NavLink class="sf-nav-item" href="/mitre">
+                <span class="sf-nav-icon">⊞</span> MITRE ATT&amp;CK
+            </NavLink>
+            <NavLink class="sf-nav-item" href="/users">
+                <span class="sf-nav-icon">◎</span> Enterprise Users
+            </NavLink>
+        </div>
+
+        <div class="sf-nav-section">
+            <span class="sf-nav-label">REPORTS</span>
+            <NavLink class="sf-nav-item" href="/reports">
+                <span class="sf-nav-icon">▤</span> Reports
+            </NavLink>
+        </div>
+
+        <div class="sf-sidebar-footer">
+            <span class="sf-status-dot sf-status-live"></span>
+            <span>Live feeds active</span>
+        </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="sf-main">
+        @Body
+    </main>
+</div>

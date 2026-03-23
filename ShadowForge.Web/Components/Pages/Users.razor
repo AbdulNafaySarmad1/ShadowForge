@@ -1,0 +1,89 @@
+@page "/users"
+@rendermode InteractiveServer
+@inject IUserGenService UserGen
+
+<PageTitle>ShadowForge — Enterprise Users</PageTitle>
+
+<div class="sf-page">
+    <div class="sf-page-header">
+        <div>
+            <h1 class="sf-page-title">Enterprise Directory</h1>
+            <p class="sf-page-sub">Simulated employee roster — live from randomuser.me + Bogus</p>
+        </div>
+        <div class="sf-btn-row">
+            <input type="number" class="sf-input sf-input-sm" @bind="_count" min="10" max="100" />
+            <button class="sf-btn sf-btn-primary" @onclick="GenerateAsync" disabled="@_loading">
+                @(_loading ? "Generating…" : "⟳ Generate Users")
+            </button>
+        </div>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="sf-panel sf-empty-panel"><div class="sf-empty">Fetching users from randomuser.me…</div></div>
+    }
+    else if (_users.Any())
+    {
+        <!-- Summary strip -->
+        <div class="sf-kpi-row sf-mb">
+            <div class="sf-kpi sf-kpi-neutral"><span class="sf-kpi-num">@_users.Count</span><span class="sf-kpi-label">Total Users</span></div>
+            <div class="sf-kpi sf-kpi-warn"><span class="sf-kpi-num">@_users.Count(u => u.IsAdminAccount)</span><span class="sf-kpi-label">Admin Accounts</span></div>
+            <div class="sf-kpi sf-kpi-neutral"><span class="sf-kpi-num">@_users.Select(u => u.Department).Distinct().Count()</span><span class="sf-kpi-label">Departments</span></div>
+        </div>
+
+        <!-- Filter -->
+        <div class="sf-panel-inline sf-mb">
+            <input class="sf-input" @bind="_filter" @bind:event="oninput" placeholder="Filter by name, department, role…" />
+        </div>
+
+        <div class="sf-user-table-wrap">
+            <table class="sf-table">
+                <thead>
+                    <tr>
+                        <th></th><th>Name</th><th>Email</th><th>Department</th>
+                        <th>Title</th><th>IP Address</th><th>Admin</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in FilteredUsers)
+                    {
+                        <tr class="@(user.IsAdminAccount ? "sf-row-admin" : "")">
+                            <td><img class="sf-avatar" src="@user.AvatarUrl" alt="avatar" /></td>
+                            <td><strong>@user.FullName</strong></td>
+                            <td class="sf-mono">@user.Email</td>
+                            <td>@user.Department</td>
+                            <td>@user.JobTitle</td>
+                            <td class="sf-mono">@user.IpAddress</td>
+                            <td>@(user.IsAdminAccount ? "⚠ YES" : "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private List<FakeUser> _users = [];
+    private bool _loading = false;
+    private int _count = 50;
+    private string _filter = string.Empty;
+
+    private IEnumerable<FakeUser> FilteredUsers => string.IsNullOrWhiteSpace(_filter)
+        ? _users
+        : _users.Where(u =>
+            u.FullName.Contains(_filter, StringComparison.OrdinalIgnoreCase) ||
+            u.Department.Contains(_filter, StringComparison.OrdinalIgnoreCase) ||
+            u.JobTitle.Contains(_filter, StringComparison.OrdinalIgnoreCase) ||
+            u.Email.Contains(_filter, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync() => await GenerateAsync();
+
+    private async Task GenerateAsync()
+    {
+        _loading = true;
+        StateHasChanged();
+        try { _users = (await UserGen.GenerateUsersAsync(_count)).ToList(); }
+        finally { _loading = false; }
+    }
+}

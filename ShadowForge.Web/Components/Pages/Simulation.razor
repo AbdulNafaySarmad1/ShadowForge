@@ -1,0 +1,254 @@
+@page "/simulation"
+@rendermode InteractiveServer
+@inject SimulationOrchestrator Orchestrator
+@inject DashboardStateService State
+@inject IUserGenService UserGen
+@implements IDisposable
+
+<PageTitle>ShadowForge — Run Simulation</PageTitle>
+
+<div class="sf-page">
+    <div class="sf-page-header">
+        <div>
+            <h1 class="sf-page-title">Simulation Control</h1>
+            <p class="sf-page-sub">Configure and launch adversary emulation scenarios</p>
+        </div>
+    </div>
+
+    <!-- Config panel -->
+    <div class="sf-grid-2">
+        <div class="sf-panel">
+            <div class="sf-panel-header"><span>Scenario Configuration</span></div>
+
+            <div class="sf-form-row">
+                <label class="sf-label">Target Subnet</label>
+                <input class="sf-input" @bind="_subnet" placeholder="10.0.1.0/24" disabled="@_running" />
+            </div>
+
+            <div class="sf-form-row">
+                <label class="sf-label">Modules to Run</label>
+                @foreach (var mod in _moduleOptions)
+                {
+                    <label class="sf-checkbox-row">
+                        <input type="checkbox" checked="@mod.Selected"
+                               @onchange="e => mod.Selected = (bool)e.Value!"
+                               disabled="@_running" />
+                        <span class="sf-mod-label">@mod.Name</span>
+                        <span class="sf-mod-desc">@mod.Description</span>
+                    </label>
+                }
+            </div>
+
+            <div class="sf-form-row">
+                <label class="sf-label">Pre-load Enterprise Users</label>
+                <label class="sf-checkbox-row">
+                    <input type="checkbox" @bind="_preloadUsers" disabled="@_running" />
+                    <span>Generate @_userCount fake enterprise employees</span>
+                </label>
+                @if (_preloadUsers)
+                {
+                    <input type="range" min="10" max="100" @bind="_userCount" class="sf-range" />
+                    <span class="sf-hint">@_userCount users</span>
+                }
+            </div>
+
+            <div class="sf-btn-row">
+                @if (!_running)
+                {
+                    <button class="sf-btn sf-btn-primary" @onclick="StartSimulationAsync">
+                        ▶ Launch Simulation
+                    </button>
+                }
+                else
+                {
+                    <button class="sf-btn sf-btn-danger" @onclick="CancelSimulation">
+                        ■ Cancel
+                    </button>
+                }
+            </div>
+        </div>
+
+        <!-- Live progress -->
+        <div class="sf-panel">
+            <div class="sf-panel-header">
+                <span>Execution Log</span>
+                @if (_running)
+                {
+                    <span class="sf-badge sf-badge-live">● RUNNING</span>
+                }
+            </div>
+
+            <div class="sf-exec-log" id="exec-log">
+                @if (!_logLines.Any())
+                {
+                    <div class="sf-empty">Execution log will appear here…</div>
+                }
+                @foreach (var line in _logLines)
+                {
+                    <div class="sf-log-line sf-log-@line.Level">
+                        <span class="sf-log-ts">@line.Timestamp</span>
+                        <span class="sf-log-msg">@line.Message</span>
+                    </div>
+                }
+            </div>
+
+            @if (_running)
+            {
+                <div class="sf-progress-section">
+                    <div class="sf-prog-label">@_currentModule</div>
+                    <div class="sf-progress-bar">
+                        <div class="sf-progress-fill sf-progress-animated" style="width:@_progress%"></div>
+                    </div>
+                    <span class="sf-prog-pct">@_progress.ToString("F0")%</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Results summary (shown after run) -->
+    @if (_results.Any() && !_running)
+    {
+        <div class="sf-panel sf-mt">
+            <div class="sf-panel-header"><span>Simulation Results</span></div>
+            <div class="sf-results-grid">
+                @foreach (var result in _results)
+                {
+                    <div class="sf-result-card sf-result-@result.Status.ToString().ToLower()">
+                        <div class="sf-result-name">@result.ModuleName</div>
+                        <div class="sf-result-stats">
+                            <span>@result.Events.Count events</span>
+                            <span>@result.Duration.TotalSeconds.ToString("F1")s</span>
+                            <span class="sf-threat-@result.HighestThreatLevel.ToString().ToLower()">
+                                Peak: @result.HighestThreatLevel
+                            </span>
+                        </div>
+                        <div class="sf-result-status">@result.Status</div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private string _subnet        = "10.0.1.0/24";
+    private bool _running         = false;
+    private bool _preloadUsers    = true;
+    private int _userCount        = 50;
+    private double _progress      = 0;
+    private string _currentModule = string.Empty;
+    private CancellationTokenSource? _cts;
+    private List<ModuleResult> _results = [];
+
+    private readonly List<(string Timestamp, string Message, string Level)> _logLines = [];
+
+    private readonly List<ModuleOption> _moduleOptions =
+    [
+        new("Reconnaissance",   "Network scan + live OTX/AbuseIPDB enrichment", true),
+        new("Lateral Movement", "Simulated pivoting via RDP, SMB, WMI, WinRM",  true),
+        new("Persistence",      "Scheduled tasks, registry keys, service install", true),
+        new("Report Generator", "Aggregate all findings + MITRE ATT&CK mapping",  true),
+    ];
+
+    private async Task StartSimulationAsync()
+    {
+        _running = true;
+        _results.Clear();
+        _logLines.Clear();
+        _cts     = new CancellationTokenSource();
+
+        State.StartSession(_subnet);
+
+        Log("info", $"Session {State.CurrentSessionId.ToString()[..8]} initialised");
+        Log("info", $"Target subnet: {_subnet}");
+
+        // Wire up orchestrator events
+        Orchestrator.OnModuleEvent += HandleModuleEvent;
+        Orchestrator.OnProgressUpdate += HandleProgress;
+
+        try
+        {
+            if (_preloadUsers)
+            {
+                Log("info", $"Pre-loading {_userCount} enterprise users from randomuser.me…");
+                var users = await UserGen.GenerateUsersAsync(_userCount);
+                Log("ok", $"Loaded {users.Count()} users into enterprise directory");
+            }
+
+            var selectedModules = _moduleOptions.Where(m => m.Selected).Select(m => m.Name).ToList();
+            Log("info", $"Running modules: {string.Join(", ", selectedModules)}");
+
+            var context = new ModuleContext(
+                State.CurrentSessionId,
+                _subnet,
+                new Dictionary<string, string> { ["subnet"] = _subnet }
+            );
+
+            foreach (var moduleName in selectedModules)
+            {
+                if (_cts.Token.IsCancellationRequested) break;
+                Log("info", $"Starting module: {moduleName}");
+                var result = await Orchestrator.RunModuleAsync(moduleName, context, _cts.Token);
+                _results.Add(result);
+                State.SetModuleResult(result);
+                Log(result.Status == ModuleStatus.Completed ? "ok" : "error",
+                    $"{moduleName} {result.Status} — {result.Events.Count} events in {result.Duration.TotalSeconds:F1}s");
+            }
+
+            Log("ok", "Simulation complete");
+        }
+        catch (OperationCanceledException)
+        {
+            Log("warn", "Simulation cancelled by user");
+        }
+        catch (Exception ex)
+        {
+            Log("error", $"Fatal error: {ex.Message}");
+        }
+        finally
+        {
+            Orchestrator.OnModuleEvent -= HandleModuleEvent;
+            Orchestrator.OnProgressUpdate -= HandleProgress;
+            _running = false;
+            State.EndSession();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void HandleModuleEvent(object? sender, ModuleEventArgs e)
+    {
+        State.AddEvent(e.Event);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void HandleProgress(object? sender, SimulationProgressEvent e)
+    {
+        _progress      = e.ProgressPercent;
+        _currentModule = e.ModuleName;
+        State.UpdateProgress(e.ModuleName, e.ProgressPercent);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void CancelSimulation() => _cts?.Cancel();
+
+    private void Log(string level, string message)
+    {
+        _logLines.Insert(0, (DateTime.Now.ToString("HH:mm:ss"), message, level));
+        if (_logLines.Count > 200) _logLines.RemoveAt(_logLines.Count - 1);
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Orchestrator.OnModuleEvent -= HandleModuleEvent;
+        Orchestrator.OnProgressUpdate -= HandleProgress;
+        _cts?.Dispose();
+    }
+
+    private class ModuleOption(string name, string description, bool selected)
+    {
+        public string Name        { get; } = name;
+        public string Description { get; } = description;
+        public bool Selected      { get; set; } = selected;
+    }
+}

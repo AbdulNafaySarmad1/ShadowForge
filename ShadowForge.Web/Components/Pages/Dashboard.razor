@@ -1,0 +1,175 @@
+@page "/"
+@rendermode InteractiveServer
+@inject DashboardStateService State
+@inject IThreatIntelService ThreatIntel
+@implements IDisposable
+
+<PageTitle>ShadowForge — Dashboard</PageTitle>
+
+<div class="sf-page">
+    <div class="sf-page-header">
+        <div>
+            <h1 class="sf-page-title">Operations Dashboard</h1>
+            <p class="sf-page-sub">Session <code>@State.CurrentSessionId.ToString()[..8]</code> · @(State.IsRunning ? "LIVE" : "STANDBY")</p>
+        </div>
+        @if (State.IsRunning)
+        {
+            <div class="sf-progress-bar-wrap">
+                <span class="sf-badge sf-badge-live">● RUNNING — @State.CurrentModule</span>
+                <div class="sf-progress-bar">
+                    <div class="sf-progress-fill" style="width:@State.ProgressPercent%"></div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- KPI strip -->
+    <div class="sf-kpi-row">
+        <div class="sf-kpi sf-kpi-neutral">
+            <span class="sf-kpi-num">@State.TotalEvents</span>
+            <span class="sf-kpi-label">Total Events</span>
+        </div>
+        <div class="sf-kpi sf-kpi-critical">
+            <span class="sf-kpi-num">@State.CriticalCount</span>
+            <span class="sf-kpi-label">Critical</span>
+        </div>
+        <div class="sf-kpi sf-kpi-high">
+            <span class="sf-kpi-num">@State.HighCount</span>
+            <span class="sf-kpi-label">High</span>
+        </div>
+        <div class="sf-kpi sf-kpi-neutral">
+            <span class="sf-kpi-num">@State.HostCount</span>
+            <span class="sf-kpi-label">Hosts Found</span>
+        </div>
+        <div class="sf-kpi sf-kpi-warn">
+            <span class="sf-kpi-num">@State.CompromisedCount</span>
+            <span class="sf-kpi-label">Compromised</span>
+        </div>
+        <div class="sf-kpi sf-kpi-neutral">
+            <span class="sf-kpi-num">@State.IOCPulses.Count</span>
+            <span class="sf-kpi-label">IOC Feeds</span>
+        </div>
+    </div>
+
+    <div class="sf-grid-2">
+        <!-- Live event feed -->
+        <div class="sf-panel sf-panel-tall">
+            <div class="sf-panel-header">
+                <span>Live Event Feed</span>
+                <span class="sf-badge @(State.IsRunning ? "sf-badge-live" : "sf-badge-idle")">
+                    @(State.IsRunning ? "● LIVE" : "○ IDLE")
+                </span>
+            </div>
+            <div class="sf-event-feed" id="event-feed">
+                @if (!State.LiveEvents.Any())
+                {
+                    <div class="sf-empty">No events yet. Run a simulation to begin.</div>
+                }
+                @foreach (var evt in State.LiveEvents.Take(80))
+                {
+                    <div class="sf-event sf-event-@evt.ThreatLevel.ToString().ToLower()">
+                        <span class="sf-event-time">@evt.Timestamp.ToString("HH:mm:ss")</span>
+                        <span class="sf-event-badge sf-threat-@evt.ThreatLevel.ToString().ToLower()">@evt.ThreatLevel</span>
+                        <span class="sf-event-type">@evt.Type</span>
+                        <span class="sf-event-desc">@evt.Description</span>
+                        @if (evt.MitreTechniqueId is not null)
+                        {
+                            <a class="sf-mitre-tag" href="https://attack.mitre.org/techniques/@evt.MitreTechniqueId.Replace(".", "/")"
+                               target="_blank">@evt.MitreTechniqueId</a>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Module status + IOC feed -->
+        <div class="sf-panel-col">
+            <!-- Module status -->
+            <div class="sf-panel">
+                <div class="sf-panel-header"><span>Module Status</span></div>
+                <div class="sf-module-list">
+                    @foreach (var (name, icon, cat) in Modules)
+                    {
+                        var result = State.ModuleResults.FirstOrDefault(r => r.ModuleName == name);
+                        var statusClass = result?.Status switch
+                        {
+                            ModuleStatus.Completed => "sf-mod-done",
+                            ModuleStatus.Running   => "sf-mod-running",
+                            ModuleStatus.Failed    => "sf-mod-failed",
+                            _                      => "sf-mod-idle"
+                        };
+                        <div class="sf-module-row @statusClass">
+                            <span class="sf-mod-icon">@icon</span>
+                            <div class="sf-mod-info">
+                                <span class="sf-mod-name">@name</span>
+                                @if (result is not null)
+                                {
+                                    <span class="sf-mod-meta">@result.Events.Count events · @result.Duration.TotalSeconds.ToString("F1")s</span>
+                                }
+                            </div>
+                            <span class="sf-mod-status">@(result?.Status.ToString() ?? "Idle")</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Live IOC pulses -->
+            <div class="sf-panel">
+                <div class="sf-panel-header">
+                    <span>Live IOC Pulses</span>
+                    <span class="sf-badge sf-badge-otx">OTX</span>
+                </div>
+                @if (!State.IOCPulses.Any())
+                {
+                    <div class="sf-empty">Loading threat feeds…</div>
+                }
+                @foreach (var pulse in State.IOCPulses.Take(5))
+                {
+                    <div class="sf-ioc-row">
+                        <div class="sf-ioc-header">
+                            <span class="sf-threat-@pulse.ThreatLevel.ToString().ToLower() sf-ioc-level">@pulse.ThreatLevel</span>
+                            <span class="sf-ioc-name">@pulse.Name</span>
+                        </div>
+                        <div class="sf-ioc-tags">
+                            @foreach (var tag in pulse.Tags.Take(4))
+                            {
+                                <span class="sf-tag">@tag</span>
+                            }
+                            <span class="sf-ioc-count">@pulse.IndicatorCount IOCs</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private static readonly (string Name, string Icon, ModuleCategory Cat)[] Modules =
+    [
+        ("Reconnaissance",   "◈", ModuleCategory.Reconnaissance),
+        ("Lateral Movement", "▶", ModuleCategory.LateralMovement),
+        ("Persistence",      "⊕", ModuleCategory.Persistence),
+        ("Report Generator", "▤", ModuleCategory.Reporting),
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        State.OnStateChanged += HandleStateChanged;
+
+        // Pre-load IOC pulses on dashboard load
+        if (!State.IOCPulses.Any())
+        {
+            try
+            {
+                var pulses = await ThreatIntel.GetLatestPulsesAsync(10);
+                State.SetIOCPulses(pulses);
+            }
+            catch { /* Non-fatal — fallback data shown */ }
+        }
+    }
+
+    private void HandleStateChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => State.OnStateChanged -= HandleStateChanged;
+}
