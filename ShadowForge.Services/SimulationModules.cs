@@ -271,7 +271,7 @@ public sealed class ReportModule : BaseModule
         await SimulateDelayAsync(200, 500, ct);
 
         var allEvents = SimulationEventStore.Get(context.SessionId);
-        Console.WriteLine("[STORE] allEvents count=" + allEvents.Count + " sessionId=" + context.SessionId);
+        ("[STORE] allEvents count=" + allEvents.Count + " sessionId=" + context.SessionId);
         // Build MITRE ATT&CK mappings from all events via LINQ
         var allMitreTechniques = allEvents
             .Where(e => e.MitreTechniqueId is not null)
