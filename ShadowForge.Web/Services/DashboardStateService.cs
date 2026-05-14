@@ -99,7 +99,6 @@ public sealed class DashboardStateService
         if (result.Data.TryGetValue("mitre_mappings", out var raw) && raw is not null)
         {
             var mappings = (raw as List<MitreAttackMapping>) ?? [];
-            ($"[MITRE] raw type={raw.GetType().FullName}, mappings count={mappings.Count}");
             MitreMappings.Clear();
             MitreMappings.AddRange(mappings);
         }
