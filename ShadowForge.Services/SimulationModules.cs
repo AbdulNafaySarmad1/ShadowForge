@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using ShadowForge.Core.Abstractions;
 using ShadowForge.Core.Interfaces;
 using ShadowForge.Core.Models;
@@ -270,8 +270,10 @@ public sealed class ReportModule : BaseModule
     {
         await SimulateDelayAsync(200, 500, ct);
 
+        var allEvents = SimulationEventStore.Get(context.SessionId);
+        Console.WriteLine("[STORE] allEvents count=" + allEvents.Count + " sessionId=" + context.SessionId);
         // Build MITRE ATT&CK mappings from all events via LINQ
-        var allMitreTechniques = result.Events
+        var allMitreTechniques = allEvents
             .Where(e => e.MitreTechniqueId is not null)
             .GroupBy(e => e.MitreTechniqueId!)
             .Select(g =>
@@ -298,4 +300,12 @@ public sealed class ReportModule : BaseModule
 
         Logger.LogInformation($"[Report] Generated report with {allMitreTechniques.Count} unique MITRE techniques");
     }
+}
+
+
+public static class SimulationEventStore
+{
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, List<SimulationEvent>> _store = new();
+    public static void Set(Guid sessionId, List<SimulationEvent> events) => _store[sessionId] = events;
+    public static List<SimulationEvent> Get(Guid sessionId) => _store.TryGetValue(sessionId, out var e) ? e : new();
 }

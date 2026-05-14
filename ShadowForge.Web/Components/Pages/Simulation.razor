@@ -1,4 +1,4 @@
-@page "/simulation"
+﻿@page "/simulation"
 @rendermode InteractiveServer
 @inject SimulationOrchestrator Orchestrator
 @inject DashboardStateService State
@@ -190,7 +190,9 @@
                 Log("info", $"Starting module: {moduleName}");
                 var result = await Orchestrator.RunModuleAsync(moduleName, context, _cts.Token);
                 _results.Add(result);
+                ShadowForge.Services.SimulationEventStore.Set(context.SessionId, _results.SelectMany(r => r.Events).ToList());
                 State.SetModuleResult(result);
+Console.WriteLine($"[DEBUG] SetModuleResult called for {result.ModuleName}, Data keys: {string.Join(", ", result.Data.Keys)}, mitre_mappings null? {!result.Data.ContainsKey("mitre_mappings")}");
                 Log(result.Status == ModuleStatus.Completed ? "ok" : "error",
                     $"{moduleName} {result.Status} — {result.Events.Count} events in {result.Duration.TotalSeconds:F1}s");
             }

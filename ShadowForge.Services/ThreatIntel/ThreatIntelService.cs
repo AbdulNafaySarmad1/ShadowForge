@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
@@ -30,7 +30,7 @@ public sealed class ThreatIntelService : IThreatIntelService, IDisposable
         _logger      = logger;
     }
 
-    // ── IP Reputation (combines OTX + AbuseIPDB) ──────────────────────────────
+    // â”€â”€ IP Reputation (combines OTX + AbuseIPDB) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public async Task<IpReputation> CheckIpReputationAsync(string ipAddress)
     {
         // Return cached if fresh
@@ -77,7 +77,7 @@ public sealed class ThreatIntelService : IThreatIntelService, IDisposable
         return reputation;
     }
 
-    // ── Latest OTX pulses (live IOC feed) ─────────────────────────────────────
+    // â”€â”€ Latest OTX pulses (live IOC feed) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public async Task<IEnumerable<ThreatIndicator>> GetLatestPulsesAsync(int limit = 20)
     {
         try
@@ -96,7 +96,7 @@ public sealed class ThreatIntelService : IThreatIntelService, IDisposable
                 Modified       = p.Modified,
                 Tags           = p.Tags ?? [],
                 IndicatorCount = p.IndicatorCount,
-                ThreatLevel    = MapOtxTlpToThreatLevel(p.Tlp)
+                ThreatLevel    = MapPulseToThreatLevel(p.Tlp, p.Name, p.Tags)
             });
         }
         catch (Exception ex)
@@ -106,7 +106,7 @@ public sealed class ThreatIntelService : IThreatIntelService, IDisposable
         }
     }
 
-    // ── Domain analysis ───────────────────────────────────────────────────────
+    // â”€â”€ Domain analysis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public async Task<DomainIntel> AnalyzeDomainAsync(string domain)
     {
         try
@@ -133,7 +133,7 @@ public sealed class ThreatIntelService : IThreatIntelService, IDisposable
         }
     }
 
-    // ── File hash lookup ──────────────────────────────────────────────────────
+    // â”€â”€ File hash lookup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public async Task<FileHashIntel> CheckFileHashAsync(string hash)
     {
         try
@@ -155,7 +155,7 @@ public sealed class ThreatIntelService : IThreatIntelService, IDisposable
         }
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────────
+    // â”€â”€ Private helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private async Task<OtxIpResult?> FetchOtxIpAnalysisAsync(string ip)
     {
@@ -186,14 +186,25 @@ public sealed class ThreatIntelService : IThreatIntelService, IDisposable
         }
     }
 
-    private static ThreatLevel MapOtxTlpToThreatLevel(string? tlp) => tlp?.ToLower() switch
+            private static ThreatLevel MapPulseToThreatLevel(string? tlp, string name, List<string> tags)
     {
-        "red"    => ThreatLevel.Critical,
-        "amber"  => ThreatLevel.High,
-        "green"  => ThreatLevel.Medium,
-        "white"  => ThreatLevel.Low,
-        _        => ThreatLevel.None
-    };
+        // TLP red/amber = high confidence severity
+        if (tlp?.ToLower() == "red")   return ThreatLevel.Critical;
+        if (tlp?.ToLower() == "amber") return ThreatLevel.High;
+
+        // Keyword-based scoring on name + tags
+        var text = (name + " " + string.Join(" ", tags)).ToLower();
+        var criticalKeywords = new[] { "apt", "apt3", "apt37", "apt41", "seedworm", "lazarus", "kimsuky", "ransomware", "backdoor", "implant", "rat ", "trojan", "rootkit", "zero-day", "0-day", "0day", "0day", "critical", "rce", "exploit" };
+        var highKeywords     = new[] { "malware", "trojan", "botnet", "c2", "phishing", "rat ", "stealer", "dropper", "loader" };
+        var mediumKeywords   = new[] { "scan", "brute", "recon", "spray", "fraud", "spam", "miner" };
+
+        if (criticalKeywords.Any(k => text.Contains(k))) return ThreatLevel.Critical;
+        if (highKeywords.Any(k => text.Contains(k)))     return ThreatLevel.High;
+        if (mediumKeywords.Any(k => text.Contains(k)))   return ThreatLevel.Medium;
+        if (tlp?.ToLower() == "green")                   return ThreatLevel.Medium;
+
+        return ThreatLevel.Low;
+    }
 
     // Fallback demo data so the dashboard never shows empty even with no API key
     private static List<ThreatIndicator> GetFallbackIndicators() =>
@@ -211,7 +222,7 @@ public sealed class ThreatIntelService : IThreatIntelService, IDisposable
         _abuseClient.Dispose();
     }
 
-    // ── Private DTOs for JSON deserialization ─────────────────────────────────
+    // â”€â”€ Private DTOs for JSON deserialization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private record OtxIpResult(
         [property: JsonPropertyName("pulse_info")] OtxPulseInfo? PulseInfo,

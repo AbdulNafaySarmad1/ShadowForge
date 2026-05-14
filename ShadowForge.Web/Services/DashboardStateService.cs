@@ -15,20 +15,20 @@ public sealed class DashboardStateService
     public string CurrentModule   { get; private set; } = string.Empty;
     public double ProgressPercent { get; private set; }
 
-    public List<SimulationEvent>  LiveEvents      { get; } = [];
-    public List<SimulatedHost>    DiscoveredHosts { get; } = [];
-    public List<ThreatIndicator>  IOCPulses       { get; } = [];
-    public List<MitreAttackMapping> MitreMappings { get; } = [];
-    public List<ModuleResult>     ModuleResults   { get; } = [];
+    public List<SimulationEvent>    LiveEvents      { get; } = [];
+    public List<SimulatedHost>      DiscoveredHosts { get; } = [];
+    public List<ThreatIndicator>    IOCPulses       { get; } = [];
+    public List<MitreAttackMapping> MitreMappings   { get; } = [];
+    public List<ModuleResult>       ModuleResults   { get; } = [];
 
     // Counters
-    public int TotalEvents   => LiveEvents.Count;
-    public int CriticalCount => LiveEvents.Count(e => e.ThreatLevel == ThreatLevel.Critical);
-    public int HighCount     => LiveEvents.Count(e => e.ThreatLevel == ThreatLevel.High);
-    public int HostCount     => DiscoveredHosts.Count;
+    public int TotalEvents      => LiveEvents.Count;
+    public int CriticalCount    => LiveEvents.Count(e => e.ThreatLevel == ThreatLevel.Critical);
+    public int HighCount        => LiveEvents.Count(e => e.ThreatLevel == ThreatLevel.High);
+    public int HostCount        => DiscoveredHosts.Count;
     public int CompromisedCount => DiscoveredHosts.Count(h => h.IsCompromised);
 
-    // ── Events (notify Blazor components to re-render) ─────────────────────────
+    // ── Events (notify Blazor components to re-render) ────────────────────────
     public event Action? OnStateChanged;
     public event Action<SimulationEvent>? OnNewEvent;
     public event Action<SimulatedHost>? OnHostDiscovered;
@@ -56,11 +56,10 @@ public sealed class DashboardStateService
 
     public void AddEvent(SimulationEvent evt)
     {
-        LiveEvents.Insert(0, evt); // newest first
-        if (LiveEvents.Count > 500) LiveEvents.RemoveAt(LiveEvents.Count - 1); // cap at 500
+        LiveEvents.Insert(0, evt);
+        if (LiveEvents.Count > 500) LiveEvents.RemoveAt(LiveEvents.Count - 1);
         OnNewEvent?.Invoke(evt);
 
-        // Auto-discover hosts from host-discovered events
         if (evt.Type == SimEventType.HostDiscovered &&
             !DiscoveredHosts.Any(h => h.IpAddress == evt.Target))
         {
@@ -97,9 +96,10 @@ public sealed class DashboardStateService
         ModuleResults.Add(result);
 
         // Extract MITRE mappings
-        if (result.Data.TryGetValue("mitre_mappings", out var raw) &&
-            raw is List<MitreAttackMapping> mappings)
+        if (result.Data.TryGetValue("mitre_mappings", out var raw) && raw is not null)
         {
+            var mappings = (raw as List<MitreAttackMapping>) ?? [];
+            Console.WriteLine($"[MITRE] raw type={raw.GetType().FullName}, mappings count={mappings.Count}");
             MitreMappings.Clear();
             MitreMappings.AddRange(mappings);
         }

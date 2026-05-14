@@ -15,5 +15,6 @@
     <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
     <PackageReference Include="Bogus" Version="35.5.1" />
+    <PackageReference Include="PuppeteerSharp" Version="20.0.3" />
   </ItemGroup>
 </Project>

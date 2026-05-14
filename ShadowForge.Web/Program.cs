@@ -54,7 +54,8 @@ builder.Services.AddTransient<ReportModule>();
 
 builder.Services.AddScoped<ModuleRegistry>();
 builder.Services.AddScoped<SimulationOrchestrator>();
-builder.Services.AddScoped<ShadowForge.Web.Services.DashboardStateService>();
+builder.Services.AddSingleton<ShadowForge.Web.Services.DashboardStateService>();
+builder.Services.AddScoped<IReportService, ShadowForge.Services.Reporting.ReportService>();
 
 var app = builder.Build();
 

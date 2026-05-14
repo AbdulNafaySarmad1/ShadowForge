@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ShadowForge.Core.Interfaces;
 using ShadowForge.Core.Models;
@@ -8,7 +8,7 @@ namespace ShadowForge.Services;
 /// <summary>
 /// Plugin registry and factory for all ShadowForge modules.
 /// Demonstrates: Factory pattern, Registry pattern, dependency injection, reflection-ready design.
-/// New modules are registered here — the rest of the app is completely unaware of concrete types.
+/// New modules are registered here â€” the rest of the app is completely unaware of concrete types.
 /// </summary>
 public sealed class ModuleRegistry
 {
@@ -21,7 +21,7 @@ public sealed class ModuleRegistry
         RegisterDefaults(services);
     }
 
-    // ── Registration ──────────────────────────────────────────────────────────
+    // â”€â”€ Registration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public void Register(string name, Func<IModule> factory)
     {
@@ -37,7 +37,7 @@ public sealed class ModuleRegistry
         Register("Report Generator",    () => services.GetRequiredService<ReportModule>());
     }
 
-    // ── Resolution ────────────────────────────────────────────────────────────
+    // â”€â”€ Resolution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public IModule Resolve(string name)
     {
@@ -86,7 +86,7 @@ public sealed class SimulationOrchestrator
         var modules  = new[] { "Reconnaissance", "Lateral Movement", "Persistence", "Report Generator" };
         var total    = modules.Length;
 
-        _logger.LogInformation("Starting full simulation — session {SessionId}", context.SessionId);
+        _logger.LogInformation("Starting full simulation â€” session {SessionId}", context.SessionId);
 
         for (int i = 0; i < modules.Length && !ct.IsCancellationRequested; i++)
         {
@@ -101,8 +101,8 @@ public sealed class SimulationOrchestrator
 
             var result = await module.ExecuteAsync(context, ct);
             results.Add(result);
-
-            OnProgressUpdate?.Invoke(this, new SimulationProgressEvent(moduleName, i + 1, total, result.Status.ToString()));
+            SimulationEventStore.Set(context.SessionId, results.SelectMany(r => r.Events).ToList());
+            Console.WriteLine("[REGISTRY] Set sessionId=" + context.SessionId + " totalEvents=" + results.SelectMany(r => r.Events).Count());
             _logger.LogInformation("Module '{Module}' finished: {Status}", moduleName, result.Status);
         }
 
@@ -110,14 +110,20 @@ public sealed class SimulationOrchestrator
     }
 
     /// <summary>Runs a single named module.</summary>
-    public async Task<ModuleResult> RunModuleAsync(string moduleName, ModuleContext context, CancellationToken ct = default)
-    {
-        var module = _registry.Resolve(moduleName);
+   public async Task<ModuleResult> RunModuleAsync(string moduleName, ModuleContext context, CancellationToken ct = default)
+{
+    var module = _registry.Resolve(moduleName);
 
-        if (module is IRealtimeModule rt)
-            rt.OnEventEmitted += (s, e) => OnModuleEvent?.Invoke(s, e);
+    if (module is IRealtimeModule rt)
+        rt.OnEventEmitted += (s, e) => OnModuleEvent?.Invoke(s, e);
 
-        return await module.ExecuteAsync(context, ct);
+    var result = await module.ExecuteAsync(context, ct);
+
+    var existing = SimulationEventStore.Get(context.SessionId);
+    existing.AddRange(result.Events);
+    SimulationEventStore.Set(context.SessionId, existing);
+
+return result;
     }
 }
 

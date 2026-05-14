@@ -1,11 +1,11 @@
-﻿@* â”€â”€ Threat Intel Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ *@
+@* ── Threat Intel Page ─────────────────────────────────────────────── *@
 @* File: Components/Pages/ThreatIntel.razor *@
 @page "/threatintel"
 @rendermode InteractiveServer
 @inject IThreatIntelService ThreatIntelSvc
 @inject DashboardStateService State
 
-<PageTitle>ShadowForge â€” Threat Intelligence</PageTitle>
+<PageTitle>ShadowForge — Threat Intelligence</PageTitle>
 
 <div class="sf-page">
     <div class="sf-page-header">
@@ -14,7 +14,7 @@
             <p class="sf-page-sub">Live feeds from AlienVault OTX · AbuseIPDB</p>
         </div>
         <button class="sf-btn sf-btn-ghost" @onclick="RefreshFeedsAsync" disabled="@_loading">
-            @(_loading ? "↻ Loadingâ€¦" : "↻ Refresh")
+            @(_loading ? "⟳ Loading…" : "⟳ Refresh")
         </button>
     </div>
 
@@ -24,7 +24,7 @@
         <div class="sf-lookup-row">
             <input class="sf-input sf-input-wide" @bind="_lookupIp" placeholder="Enter IP address (e.g. 1.1.1.1)" />
             <button class="sf-btn sf-btn-primary" @onclick="LookupIpAsync" disabled="@_lookupLoading">
-                @(_lookupLoading ? "Checkingâ€¦" : "Check IP")
+                @(_lookupLoading ? "Checking…" : "Check IP")
             </button>
         </div>
         @if (_lookupResult is not null)
@@ -52,22 +52,22 @@
         <div class="sf-panel-header">
             <span>Latest OTX Pulses</span>
 
-            @* â”€â”€ SEVERITY FILTER â”€â”€ *@
+            @* ── SEVERITY FILTER ── *@
             <div class="sf-filter-row">
-    @foreach (var level in _allLevels)
-    {
-        var labelText = level is null ? "All" : level.ToString();
-        var activeClass = _activeFilter == level
-            ? (level is null ? " active-all" : $" active-{level.ToString()!.ToLower()}")
-            : "";
-        <button class="sf-filter-btn@(activeClass)" @onclick="() => SetFilter(level)">@labelText</button>
-    }
-</div>
+                <span class="sf-filter-label">Filter:</span>
+                @foreach (var level in _allLevels)
+                {
+                    <button class="sf-filter-btn @(_activeFilter == level ? "sf-filter-btn-active sf-threat-" + level.ToString().ToLower() : "")"
+                            @onclick="() => SetFilter(level)">
+                        @level
+                    </button>
+                }
+            </div>
         </div>
 
         @if (_loading)
         {
-            <div class="sf-empty">Fetching live threat feedsâ€¦</div>
+            <div class="sf-empty">Fetching live threat feeds…</div>
         }
         else
         {
@@ -110,7 +110,7 @@
     private string _lookupIp   = string.Empty;
     private IpReputation? _lookupResult;
 
-    // â”€â”€ Severity filter state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Severity filter state ─────────────────────────────────────────────────
     // null = show all
     private ThreatLevel? _activeFilter = null;
 
@@ -137,7 +137,6 @@
         try
         {
             var pulses = await ThreatIntelSvc.GetLatestPulsesAsync(20);
-    Console.WriteLine($"[DEBUG] Pulse count: {pulses.Count()}, levels: {string.Join(',', pulses.Select(p => p.ThreatLevel))}");
             State.SetIOCPulses(pulses);
         }
         finally { _loading = false; }

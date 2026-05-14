@@ -1,11 +1,11 @@
-﻿@page "/reports"
+@page "/reports"
 @rendermode InteractiveServer
 @inject DashboardStateService State
 @inject IReportService ReportSvc
-@inject Microsoft.JSInterop.IJSRuntime JS
+@inject IJSRuntime JS
 @implements IDisposable
 
-<PageTitle>ShadowForge â€” Reports</PageTitle>
+<PageTitle>ShadowForge — Reports</PageTitle>
 
 <div class="sf-page">
     <div class="sf-page-header">
@@ -18,11 +18,11 @@
             <button class="sf-btn sf-btn-primary" @onclick="ExportPdfAsync" disabled="@_exporting">
                 @if (_exporting)
                 {
-                    <span>âŸ³ Generating PDFâ€¦</span>
+                    <span>⟳ Generating PDF…</span>
                 }
                 else
                 {
-                    <span>â¬‡ Export PDF Report</span>
+                    <span>⬇ Export PDF Report</span>
                 }
             </button>
         }
@@ -31,14 +31,14 @@
     @if (_exportError is not null)
     {
         <div class="sf-panel sf-mb" style="border-left: 3px solid #ef4444; padding: 12px 16px; color: #ef4444; font-size: 13px;">
-            âš  PDF export failed: @_exportError
+            ⚠ PDF export failed: @_exportError
         </div>
     }
 
     @if (!State.ModuleResults.Any())
     {
         <div class="sf-panel sf-empty-panel">
-            <div class="sf-empty-icon">â–¤</div>
+            <div class="sf-empty-icon">▤</div>
             <div>No simulation data yet.</div>
             <div class="sf-hint">Complete a simulation to generate a report.</div>
         </div>
@@ -143,12 +143,8 @@
     private bool   _exporting   = false;
     private string? _exportError = null;
 
-    protected override void OnInitialized()
-{
-    State.OnStateChanged += Refresh;
-    Refresh();
-}
-    private async void Refresh() => await InvokeAsync(StateHasChanged);
+    protected override void OnInitialized() => State.OnStateChanged += Refresh;
+    private void Refresh() => InvokeAsync(StateHasChanged);
     public void Dispose() => State.OnStateChanged -= Refresh;
 
     private async Task ExportPdfAsync()
@@ -163,7 +159,7 @@
             var report = new SimulationReport
             {
                 SessionId      = State.CurrentSessionId,
-                Title          = $"ShadowForge APT Simulation â€” {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC",
+                Title          = $"ShadowForge APT Simulation — {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC",
                 GeneratedAt    = DateTime.UtcNow,
                 Analyst        = "ShadowForge AutoReport",
                 ModuleResults  = State.ModuleResults,
