@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using ShadowForge.Core.Interfaces;
 using ShadowForge.Data;
 using ShadowForge.Data.Repositories;
@@ -56,6 +56,7 @@ builder.Services.AddScoped<ModuleRegistry>();
 builder.Services.AddScoped<SimulationOrchestrator>();
 builder.Services.AddSingleton<ShadowForge.Web.Services.DashboardStateService>();
 builder.Services.AddScoped<IReportService, ShadowForge.Services.Reporting.ReportService>();
+builder.Services.AddScoped<ShadowForge.Services.Reporting.XlsxExportService>();
 
 var app = builder.Build();
 

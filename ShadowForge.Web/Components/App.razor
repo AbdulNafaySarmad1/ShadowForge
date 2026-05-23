@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ShadowForge — Adversary Emulation Platform</title>
+    <title>ShadowForge â€” Adversary Emulation Platform</title>
     <base href="/" />
     <link rel="stylesheet" href="app.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,5 +30,194 @@
         URL.revokeObjectURL(url);
     };
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// â”€â”€ Chart registry (destroy before re-render) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const _sfCharts = {};
+
+function sfDestroyChart(id) {
+    if (_sfCharts[id]) { _sfCharts[id].destroy(); delete _sfCharts[id]; }
+}
+
+const _sfDefaults = {
+    color: '#94a3b8',
+    grid:  'rgba(148,163,184,.08)',
+    font:  { family: "'Segoe UI', Arial, sans-serif", size: 11 }
+};
+
+// â”€â”€ Doughnut â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+window.sfRenderDoughnut = function(id, labels, data, colors) {
+    sfDestroyChart(id);
+    const ctx = document.getElementById(id);
+    if (!ctx) return;
+    _sfCharts[id] = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#0f172a' }] },
+        options: {
+            responsive: true, maintainAspectRatio: false, cutout: '68%',
+            plugins: {
+                legend: { position: 'right', labels: { color: _sfDefaults.color, font: _sfDefaults.font, padding: 14, boxWidth: 12 } },
+                tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}` } }
+            }
+        }
+    });
+};
+
+// â”€â”€ Horizontal bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+window.sfRenderHBar = function(id, labels, data, color) {
+    sfDestroyChart(id);
+    const ctx = document.getElementById(id);
+    if (!ctx) return;
+    _sfCharts[id] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                data,
+                backgroundColor: color + '99',
+                borderColor: color,
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { color: _sfDefaults.color, font: _sfDefaults.font }, grid: { color: _sfDefaults.grid }, beginAtZero: true },
+                y: { ticks: { color: _sfDefaults.color, font: { ..._sfDefaults.font, family: 'monospace' } }, grid: { display: false } }
+            }
+        }
+    });
+};
+
+// â”€â”€ Grouped bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+window.sfRenderBar = function(id, labels, data, colors) {
+    sfDestroyChart(id);
+    const ctx = document.getElementById(id);
+    if (!ctx) return;
+    _sfCharts[id] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                data,
+                backgroundColor: colors.map(c => c + 'bb'),
+                borderColor: colors,
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { color: _sfDefaults.color, font: _sfDefaults.font }, grid: { display: false } },
+                y: { ticks: { color: _sfDefaults.color, font: _sfDefaults.font }, grid: { color: _sfDefaults.grid }, beginAtZero: true }
+            }
+        }
+    });
+};
+
+// â”€â”€ XLSX builder (SheetJS) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+window.sfBuildXlsx = function(payload) {
+    const wb = XLSX.utils.book_new();
+
+    // â”€â”€ Sheet 1: Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    const sumRows = [
+        ['ShadowForge APT Simulation Report'],
+        [''],
+        ['Session ID',        payload.summary.sessionId],
+        ['Generated',         payload.summary.generatedAt],
+        [''],
+        ['METRIC',            'VALUE'],
+        ['Total Events',      payload.summary.totalEvents],
+        ['Critical',          payload.summary.criticalEvents],
+        ['High',              payload.summary.highEvents],
+        ['Medium',            payload.summary.mediumEvents],
+        ['Low',               payload.summary.lowEvents],
+        ['Hosts Discovered',  payload.summary.hostsDiscovered],
+        ['Hosts Compromised', payload.summary.hostsCompromised],
+        ['MITRE Techniques',  payload.summary.mitreCount],
+        ['IOCs Identified',   payload.summary.iocCount],
+    ];
+    const wsSummary = XLSX.utils.aoa_to_sheet(sumRows);
+    wsSummary['!cols'] = [{ wch: 22 }, { wch: 40 }];
+    // Style title
+    if (wsSummary['A1']) wsSummary['A1'].s = { font: { bold: true, sz: 16 } };
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+    // â”€â”€ Sheet 2: Events â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    if (payload.events.length > 0) {
+        const evHeaders = ['Timestamp', 'Module', 'Type', 'Severity', 'Description', 'Target', 'MITRE ID'];
+        const evRows = payload.events.map(e => [
+            e.timestamp, e.module, e.type, e.severity, e.description, e.target, e.mitre
+        ]);
+        const wsEvents = XLSX.utils.aoa_to_sheet([evHeaders, ...evRows]);
+        wsEvents['!cols'] = [{ wch: 10 }, { wch: 18 }, { wch: 20 }, { wch: 10 }, { wch: 55 }, { wch: 16 }, { wch: 12 }];
+        wsEvents['!autofilter'] = { ref: 'A1:G1' };
+        XLSX.utils.book_append_sheet(wb, wsEvents, 'Events');
+    }
+
+    // â”€â”€ Sheet 3: MITRE ATT&CK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    if (payload.mitre.length > 0) {
+        const mitHeaders = ['Technique ID', 'Technique Name', 'Tactic', 'Severity', 'Times Observed', 'URL'];
+        const mitRows = payload.mitre.map(m => [
+            m.techniqueId, m.techniqueName, m.tactic, m.severity, m.timesObserved, m.url
+        ]);
+        const wsMitre = XLSX.utils.aoa_to_sheet([mitHeaders, ...mitRows]);
+        wsMitre['!cols'] = [{ wch: 14 }, { wch: 40 }, { wch: 18 }, { wch: 10 }, { wch: 16 }, { wch: 55 }];
+        wsMitre['!autofilter'] = { ref: 'A1:F1' };
+        XLSX.utils.book_append_sheet(wb, wsMitre, 'MITRE ATT&CK');
+    }
+
+    // â”€â”€ Sheet 4: Discovered Hosts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    if (payload.hosts.length > 0) {
+        const hHeaders = ['IP Address', 'Hostname', 'OS', 'Open Ports', 'Threat Score', 'Compromised'];
+        const hRows = payload.hosts.map(h => [
+            h.ip, h.hostname, h.os, h.openPorts, h.threatScore, h.compromised
+        ]);
+        const wsHosts = XLSX.utils.aoa_to_sheet([hHeaders, ...hRows]);
+        wsHosts['!cols'] = [{ wch: 16 }, { wch: 22 }, { wch: 22 }, { wch: 12 }, { wch: 14 }, { wch: 12 }];
+        wsHosts['!autofilter'] = { ref: 'A1:F1' };
+        XLSX.utils.book_append_sheet(wb, wsHosts, 'Discovered Hosts');
+    }
+
+    // â”€â”€ Sheet 5: IOCs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    if (payload.iocs.length > 0) {
+        const iocHeaders = ['ID', 'Name', 'Severity', 'Indicators', 'Tags', 'Description'];
+        const iocRows = payload.iocs.map(i => [
+            i.id, i.name, i.severity, i.indicators, i.tags, i.description
+        ]);
+        const wsIoc = XLSX.utils.aoa_to_sheet([iocHeaders, ...iocRows]);
+        wsIoc['!cols'] = [{ wch: 12 }, { wch: 38 }, { wch: 10 }, { wch: 12 }, { wch: 28 }, { wch: 55 }];
+        wsIoc['!autofilter'] = { ref: 'A1:F1' };
+        XLSX.utils.book_append_sheet(wb, wsIoc, 'IOCs');
+    }
+
+    // Convert to base64
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+    return wbout;
+};
+
+// â”€â”€ Generic file downloader â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+window.sfDownloadFile = function(base64, filename, mimeType) {
+    const bytes = atob(base64);
+    const arr   = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    const blob = new Blob([arr], { type: mimeType });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};
+</script>
+
 </body>
 </html>

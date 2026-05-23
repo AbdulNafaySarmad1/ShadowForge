@@ -1,4 +1,4 @@
-/* ── ShadowForge Design System ─────────────────────────────────────────────── */
+﻿/* â”€â”€ ShadowForge Design System â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* Dark terminal aesthetic meets enterprise dashboard */
 
 :root {
@@ -36,7 +36,7 @@
     --shadow: 0 2px 12px rgba(0,0,0,0.4);
 }
 
-/* ── Reset + Base ───────────────────────────────────────────────────────────── */
+/* â”€â”€ Reset + Base â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
@@ -52,14 +52,14 @@ a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em; }
 
-/* ── Shell layout ───────────────────────────────────────────────────────────── */
+/* â”€â”€ Shell layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-shell {
     display: flex;
     height: 100vh;
     overflow: hidden;
 }
 
-/* ── Sidebar ────────────────────────────────────────────────────────────────── */
+/* â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-sidebar {
     width: 220px;
     min-width: 220px;
@@ -119,7 +119,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
     border-top: 1px solid var(--border);
 }
 
-/* ── Main ───────────────────────────────────────────────────────────────────── */
+/* â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-main {
     flex: 1;
     overflow-y: auto;
@@ -149,7 +149,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 }
 .sf-page-sub { color: var(--text-secondary); font-size: 12px; margin-top: 2px; }
 
-/* ── Panels ─────────────────────────────────────────────────────────────────── */
+/* â”€â”€ Panels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-panel {
     background: var(--bg-panel);
     border: 1px solid var(--border);
@@ -179,7 +179,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 .sf-mt { margin-top: 16px; }
 .sf-mb { margin-bottom: 16px; }
 
-/* ── KPI Row ────────────────────────────────────────────────────────────────── */
+/* â”€â”€ KPI Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-kpi-row {
     display: flex;
     gap: 12px;
@@ -204,11 +204,11 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 .sf-kpi-high .sf-kpi-num { color: var(--red); }
 .sf-kpi-warn .sf-kpi-num { color: var(--amber); }
 
-/* ── Grid ───────────────────────────────────────────────────────────────────── */
+/* â”€â”€ Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 900px) { .sf-grid-2 { grid-template-columns: 1fr; } }
 
-/* ── Badges / pills ─────────────────────────────────────────────────────────── */
+/* â”€â”€ Badges / pills â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-badge {
     font-family: var(--font-mono);
     font-size: 10px;
@@ -225,7 +225,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 
 @keyframes pulse-green { 0%,100%{opacity:1} 50%{opacity:0.6} }
 
-/* ── Threat level colours ───────────────────────────────────────────────────── */
+/* â”€â”€ Threat level colours â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-threat-critical { color: var(--critical); }
 .sf-threat-high     { color: var(--red); }
 .sf-threat-medium   { color: var(--amber); }
@@ -238,7 +238,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 .sf-threat-border-low      { border-left: 3px solid var(--green) !important; }
 .sf-threat-border-none     { border-left: 3px solid var(--border) !important; }
 
-/* ── Event feed ─────────────────────────────────────────────────────────────── */
+/* â”€â”€ Event feed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-event-feed {
     flex: 1;
     overflow-y: auto;
@@ -282,7 +282,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
     white-space: nowrap;
 }
 
-/* ── Module list ────────────────────────────────────────────────────────────── */
+/* â”€â”€ Module list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-module-list { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
 .sf-module-row {
     display: flex;
@@ -303,7 +303,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 .sf-mod-running { border-color: var(--accent-dim); background: rgba(0,212,255,0.04); }
 .sf-mod-failed  .sf-mod-status { color: var(--red); }
 
-/* ── IOC rows ───────────────────────────────────────────────────────────────── */
+/* â”€â”€ IOC rows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-ioc-row    { padding: 10px 16px; border-bottom: 1px solid var(--border); }
 .sf-ioc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .sf-ioc-name   { font-weight: 500; font-size: 13px; }
@@ -320,7 +320,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
     font-family: var(--font-mono);
 }
 
-/* ── Progress ───────────────────────────────────────────────────────────────── */
+/* â”€â”€ Progress â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-progress-bar-wrap { display: flex; flex-direction: column; gap: 6px; min-width: 240px; }
 .sf-progress-bar {
     height: 4px;
@@ -340,7 +340,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 .sf-prog-label { font-size: 11px; color: var(--text-secondary); min-width: 120px; }
 .sf-prog-pct   { font-family: var(--font-mono); font-size: 11px; color: var(--accent); min-width: 36px; text-align: right; }
 
-/* ── Status dot ─────────────────────────────────────────────────────────────── */
+/* â”€â”€ Status dot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-status-dot {
     width: 7px; height: 7px;
     border-radius: 50%;
@@ -348,7 +348,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 }
 .sf-status-live { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse-green 2s ease-in-out infinite; }
 
-/* ── Forms ──────────────────────────────────────────────────────────────────── */
+/* â”€â”€ Forms â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-form-row  { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
 .sf-label     { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
 .sf-input {
@@ -400,7 +400,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 
 .sf-lookup-row { display: flex; gap: 10px; padding: 12px 16px; }
 
-/* ── Execution log ──────────────────────────────────────────────────────────── */
+/* â”€â”€ Execution log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-exec-log {
     flex: 1;
     overflow-y: auto;
@@ -419,7 +419,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 .sf-log-warn  .sf-log-msg { color: var(--amber); }
 .sf-log-error .sf-log-msg { color: var(--red); }
 
-/* ── Results grid ───────────────────────────────────────────────────────────── */
+/* â”€â”€ Results grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; padding: 16px; }
 .sf-result-card  {
     background: var(--bg-raised);
@@ -436,7 +436,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 .sf-result-completed .sf-result-status { color: var(--green); }
 .sf-result-failed    .sf-result-status { color: var(--red); }
 
-/* ── MITRE ──────────────────────────────────────────────────────────────────── */
+/* â”€â”€ MITRE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-tactic-strip { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
 .sf-tactic-badge {
     display: flex; align-items: center; gap: 6px;
@@ -467,7 +467,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 .sf-mitre-obs   { font-size: 10px; color: var(--text-muted); font-family: var(--font-mono); }
 .sf-link-sm     { font-size: 10px; color: var(--accent); }
 
-/* ── Network / Host cards ───────────────────────────────────────────────────── */
+/* â”€â”€ Network / Host cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-host-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
 .sf-host-card {
     background: var(--bg-panel); border: 1px solid var(--border);
@@ -491,7 +491,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 .sf-port-danger { background: rgba(255,82,82,0.1); color: var(--red); border-color: rgba(255,82,82,0.3); }
 .sf-host-threat { font-size: 11px; }
 
-/* ── Pulse list ─────────────────────────────────────────────────────────────── */
+/* â”€â”€ Pulse list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-pulse-list { display: flex; flex-direction: column; }
 .sf-pulse-row  { display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); align-items: flex-start; }
 .sf-pulse-left { display: flex; gap: 10px; flex: 1; align-items: flex-start; }
@@ -502,14 +502,14 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 .sf-pulse-count { font-family: var(--font-mono); font-size: 10px; color: var(--text-muted); }
 .sf-pulse-tags  { display: flex; gap: 4px; flex-wrap: wrap; }
 
-/* ── IP result ──────────────────────────────────────────────────────────────── */
+/* â”€â”€ IP result â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-ip-result { margin: 0 16px 16px; padding: 14px; background: var(--bg-raised); border-radius: var(--radius); border: 1px solid var(--border); border-left-width: 3px; }
 .sf-ip-row    { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-size: 12px; font-family: var(--font-mono); }
 .sf-ip-label  { color: var(--text-muted); min-width: 90px; }
 .sf-ip-level  { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 3px; text-transform: uppercase; }
 .sf-ip-tags   { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
 
-/* ── Users table ────────────────────────────────────────────────────────────── */
+/* â”€â”€ Users table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-user-table-wrap { overflow-x: auto; }
 .sf-table {
     width: 100%; border-collapse: collapse;
@@ -529,7 +529,7 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 .sf-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
 .sf-mono { font-family: var(--font-mono); }
 
-/* ── Reports exec grid ──────────────────────────────────────────────────────── */
+/* â”€â”€ Reports exec grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sf-exec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; padding: 16px; }
 .sf-exec-stat { display: flex; flex-direction: column; gap: 4px; }
 .sf-exec-num  { font-family: var(--font-mono); font-size: 30px; font-weight: 700; }
@@ -537,8 +537,99 @@ code { font-family: var(--font-mono); color: var(--text-code); font-size: 0.85em
 .sf-report-meta { display: flex; gap: 20px; padding: 8px 16px; font-size: 12px; color: var(--text-secondary); font-family: var(--font-mono); background: var(--bg-raised); }
 .sf-report-events { padding: 8px; display: flex; flex-direction: column; gap: 3px; }
 
-/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+/* â”€â”€ Scrollbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg-base); }
 ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* â”€â”€ Analytics Page â”€â”€ append to app.css â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+.sf-analytics-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.sf-chart-wrap {
+    position: relative;
+    height: 240px;
+    padding: 16px 20px 8px;
+}
+
+.sf-sev-legend {
+    display: flex;
+    gap: 16px;
+    padding: 8px 20px 16px;
+    flex-wrap: wrap;
+}
+
+.sf-sev-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.sf-sev-item strong {
+    color: #e2e8f0;
+    font-weight: 700;
+}
+
+.sf-sev-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* â”€â”€ Heatmap â”€â”€ */
+.sf-heatmap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 16px 20px;
+}
+
+.sf-heat-cell {
+    width: 100px;
+    padding: 10px 8px;
+    border-radius: 8px;
+    text-align: center;
+    cursor: default;
+    transition: transform .15s;
+}
+
+.sf-heat-cell:hover { transform: scale(1.05); }
+
+.sf-heat-ip {
+    font-size: 10px;
+    font-family: monospace;
+    color: #94a3b8;
+    margin-bottom: 4px;
+    word-break: break-all;
+}
+
+.sf-heat-score {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.sf-heat-os {
+    font-size: 10px;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.sf-heat-comp {
+    font-size: 9px;
+    font-weight: 800;
+    color: #ef4444;
+    letter-spacing: 1px;
+    background: rgba(239,68,68,.15);
+    border-radius: 3px;
+    padding: 1px 4px;
+}

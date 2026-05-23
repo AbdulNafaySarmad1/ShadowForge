@@ -1,0 +1,264 @@
+﻿@page "/analytics"
+@rendermode InteractiveServer
+@inject DashboardStateService State
+@inject Microsoft.JSInterop.IJSRuntime JS
+@inject ShadowForge.Services.Reporting.XlsxExportService XlsxSvc
+@implements IDisposable
+
+<PageTitle>ShadowForge - Analytics</PageTitle>
+
+<div class="sf-page">
+    <div class="sf-page-header">
+        <div>
+            <h1 class="sf-page-title">Threat Analytics</h1>
+            <p class="sf-page-sub">Visual breakdown of simulation findings</p>
+        </div>
+        @if (State.ModuleResults.Any())
+        {
+            <button class="sf-btn sf-btn-primary" @onclick="ExportXlsxAsync" disabled="@_exporting">
+                @(_exporting ? "Generating..." : "Export XLSX")
+            </button>
+        }
+    </div>
+
+    @if (_exportError is not null)
+    {
+        <div style="border-left:3px solid #ef4444;padding:10px 16px;color:#ef4444;margin-bottom:16px;font-size:13px;">
+            Export failed: @_exportError
+        </div>
+    }
+
+    @if (!State.ModuleResults.Any())
+    {
+        <div class="sf-panel" style="text-align:center;padding:60px 20px;color:#475569;">
+            <div style="font-size:48px;margin-bottom:16px;">â—ˆ</div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:8px;">No simulation data yet</div>
+            <div style="font-size:13px;">Run a simulation first to see analytics</div>
+        </div>
+    }
+    else
+    {
+        <!-- Row 1: Severity Breakdown + Top MITRE -->
+        <div class="sf-analytics-grid-2">
+            <div class="sf-panel">
+                <div class="sf-panel-header">
+                    <span>Severity Breakdown</span>
+                    <span class="sf-badge sf-badge-otx">@State.TotalEvents events</span>
+                </div>
+                <div class="sf-chart-wrap">
+                    <canvas id="chartSeverity"></canvas>
+                </div>
+                <div class="sf-sev-legend">
+                    <div class="sf-sev-item"><span class="sf-sev-dot" style="background:#ef4444"></span>Critical <strong>@_critical</strong></div>
+                    <div class="sf-sev-item"><span class="sf-sev-dot" style="background:#f97316"></span>High <strong>@_high</strong></div>
+                    <div class="sf-sev-item"><span class="sf-sev-dot" style="background:#eab308"></span>Medium <strong>@_medium</strong></div>
+                    <div class="sf-sev-item"><span class="sf-sev-dot" style="background:#22c55e"></span>Low <strong>@_low</strong></div>
+                </div>
+            </div>
+
+            <div class="sf-panel">
+                <div class="sf-panel-header"><span>Top MITRE Techniques</span></div>
+                <div class="sf-chart-wrap">
+                    <canvas id="chartMitre"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: Threat Trends + IOC Source -->
+        <div class="sf-analytics-grid-2" style="margin-top:16px;">
+            <div class="sf-panel">
+                <div class="sf-panel-header"><span>Events Per Module</span></div>
+                <div class="sf-chart-wrap">
+                    <canvas id="chartTrends"></canvas>
+                </div>
+            </div>
+
+            <div class="sf-panel">
+                <div class="sf-panel-header"><span>IOC Source Breakdown</span></div>
+                <div class="sf-chart-wrap">
+                    <canvas id="chartIoc"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: Threat Heatmap by Host -->
+        <div class="sf-panel" style="margin-top:16px;">
+            <div class="sf-panel-header"><span>Threat Heatmap by Host</span></div>
+            <div class="sf-heatmap">
+                @foreach (var host in State.DiscoveredHosts.OrderByDescending(h => HeatScore(h)))
+                {
+                    var score = HeatScore(host);
+                    var color = score switch {
+                        >= 80 => "#ef4444",
+                        >= 60 => "#f97316",
+                        >= 40 => "#eab308",
+                        >= 20 => "#22c55e",
+                        _     => "#334155"
+                    };
+                    <div class="sf-heat-cell" title="@host.IpAddress.Contains("/") ? host.IpAddress.Split("/")[0] : host.IpAddress â€” Score: @score" style="background:@(color)22;border:1px solid @color;">
+                        <div class="sf-heat-ip">@host.IpAddress.Contains("/") ? host.IpAddress.Split("/")[0] : host.IpAddress</div>
+                        <div class="sf-heat-score" style="color:@color">@score</div>
+                        <div class="sf-heat-os">@(host.OsVersion?.Split(' ').FirstOrDefault() ?? "?")</div>
+                        @if (host.IsCompromised) { <div class="sf-heat-comp">PWNED</div> }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool _exporting = false;
+    private string? _exportError;
+    private bool _chartsRendered = false;
+
+    private int _critical => State.LiveEvents.Count(e => e.ThreatLevel == ThreatLevel.Critical);
+    private int _high     => State.LiveEvents.Count(e => e.ThreatLevel == ThreatLevel.High);
+    private int _medium   => State.LiveEvents.Count(e => e.ThreatLevel == ThreatLevel.Medium);
+    private int _low      => State.LiveEvents.Count(e => e.ThreatLevel == ThreatLevel.Low);
+
+    private static int HeatScore(SimulatedHost host)
+    {
+        var base_ = host.ThreatScore switch {
+            ThreatLevel.Critical => 80,
+            ThreatLevel.High     => 60,
+            ThreatLevel.Medium   => 40,
+            ThreatLevel.Low      => 20,
+            _                    => 5
+        };
+        return host.IsCompromised ? Math.Min(100, base_ + 20) : base_;
+    }
+
+    protected override void OnInitialized() => State.OnStateChanged += Refresh;
+
+    private void Refresh()
+    {
+        _chartsRendered = false;
+        InvokeAsync(async () => {
+            StateHasChanged();
+            await Task.Delay(100);
+            await RenderChartsAsync();
+        });
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_chartsRendered && State.ModuleResults.Any())
+        {
+            _chartsRendered = true;
+            await RenderChartsAsync();
+        }
+    }
+
+    private async Task RenderChartsAsync()
+    {
+        try
+        {
+            // Chart 1: Severity doughnut
+            await JS.InvokeVoidAsync("sfRenderDoughnut", "chartSeverity",
+                new[] { "Critical", "High", "Medium", "Low", "None" },
+                new[] { _critical, _high, _medium, _low,
+                    State.LiveEvents.Count(e => e.ThreatLevel == ThreatLevel.None) },
+                new[] { "#ef4444", "#f97316", "#eab308", "#22c55e", "#334155" });
+
+            // Chart 2: Top MITRE horizontal bar
+            var top = State.MitreMappings.OrderByDescending(m => m.TimesObserved).Take(8).ToList();
+            await JS.InvokeVoidAsync("sfRenderHBar", "chartMitre",
+                top.Select(m => m.TechniqueId).ToArray(),
+                top.Select(m => m.TimesObserved).ToArray(),
+                "#6366f1");
+
+            // Chart 3: Events per module bar
+            await JS.InvokeVoidAsync("sfRenderBar", "chartTrends",
+                State.ModuleResults.Select(r => r.ModuleName.Replace(" ", "\n")).ToArray(),
+                State.ModuleResults.Select(r => r.Events.Count).ToArray(),
+                new[] { "#06b6d4", "#6366f1", "#f97316", "#22c55e" });
+
+            // Chart 4: IOC source doughnut
+            var otxCount   = State.IOCPulses.Count;
+            var abuseCount = State.DiscoveredHosts.Count(h => h.ThreatScore >= ThreatLevel.Medium);
+            await JS.InvokeVoidAsync("sfRenderDoughnut", "chartIoc",
+                new[] { "AlienVault OTX", "AbuseIPDB", "Simulated" },
+                new[] { otxCount, abuseCount, Math.Max(0, State.TotalEvents - otxCount - abuseCount) },
+                new[] { "#06b6d4", "#f97316", "#6366f1" });
+        }
+        catch { /* charts fail silently if canvas not ready */ }
+    }
+
+    private async Task ExportXlsxAsync()
+    {
+        _exporting   = true;
+        _exportError = null;
+        StateHasChanged();
+        try
+        {
+            var bytes    = await Task.Run(() => XlsxSvc.ExportSimulationData(
+                State.CurrentSessionId,
+                State.LiveEvents.ToList(),
+                State.MitreMappings.ToList(),
+                State.DiscoveredHosts.ToList(),
+                State.IOCPulses.ToList()));
+            var b64      = Convert.ToBase64String(bytes);
+            var filename = $"ShadowForge_Analytics_{DateTime.UtcNow:yyyyMMdd_HHmm}.xlsx";
+            await JS.InvokeVoidAsync("sfDownloadFile", b64, filename,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        }
+        catch (Exception ex) { _exportError = ex.Message; }
+        finally { _exporting = false; }
+    }
+    }
+
+    private object BuildXlsxPayload() => new
+    {
+        summary = new {
+            sessionId        = State.CurrentSessionId.ToString(),
+            generatedAt      = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm") + " UTC",
+            totalEvents      = State.TotalEvents,
+            criticalEvents   = _critical,
+            highEvents       = _high,
+            mediumEvents     = _medium,
+            lowEvents        = _low,
+            hostsDiscovered  = State.HostCount,
+            hostsCompromised = State.CompromisedCount,
+            mitreCount       = State.MitreMappings.Count,
+            iocCount         = State.IOCPulses.Count
+        },
+        events = State.LiveEvents.Select(e => new {
+            timestamp   = e.Timestamp.ToString("HH:mm:ss"),
+            type        = e.Type.ToString(),
+            severity    = e.ThreatLevel.ToString(),
+            description = e.Description,
+            target      = e.Target,
+            mitre       = e.MitreTechniqueId ?? "",
+            module      = e.Source
+        }).ToArray(),
+        mitre = State.MitreMappings.Select(m => new {
+            techniqueId   = m.TechniqueId,
+            techniqueName = m.TechniqueName,
+            tactic        = m.Tactic,
+            severity      = m.Severity.ToString(),
+            timesObserved = m.TimesObserved,
+            url           = m.Url
+        }).ToArray(),
+        hosts = State.DiscoveredHosts.Select(h => new {
+            ip           = h.IpAddress,
+            hostname     = h.Hostname,
+            os           = h.OsVersion,
+            openPorts    = h.OpenPorts.Count,
+            threatScore  = h.ThreatScore.ToString(),
+            compromised  = h.IsCompromised ? "YES" : "No"
+        }).ToArray(),
+        iocs = State.IOCPulses.Select(i => new {
+            id          = i.Id,
+            name        = i.Name,
+            description = i.Description,
+            severity    = i.ThreatLevel.ToString(),
+            indicators  = i.IndicatorCount,
+            tags        = string.Join(", ", i.Tags)
+        }).ToArray()
+    };
+}
+
+@code {
+    public void Dispose() => State.OnStateChanged -= Refresh;
+}
