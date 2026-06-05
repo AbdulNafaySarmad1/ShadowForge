@@ -366,7 +366,7 @@ public sealed class ReportService : IReportService
         // â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
         sb.Append($@"
 <div class=""cover"">
-  <div class=""cover-logo"">Shadow<span>Forge</span> Â· APT Emulation Framework</div>
+  <div class=""cover-logo"">Shadow<span>Forge</span> . APT Emulation Framework</div>
   <div>
     <div class=""cover-title"">Simulation<br/>Report</div>
     <div class=""cover-subtitle"">{report.Title}</div>
@@ -619,14 +619,15 @@ public sealed class ReportService : IReportService
 
            private async Task<byte[]> RenderHtmlToPdfAsync(string html)
 {
-    var fetcher = new PuppeteerSharp.BrowserFetcher();
-    var installed = fetcher.GetInstalledBrowsers();
-    if (!installed.Any())
-        await fetcher.DownloadAsync();
+    
+    
+    
+        
 
     await using var browser = await PuppeteerSharp.Puppeteer.LaunchAsync(new PuppeteerSharp.LaunchOptions
     {
         Headless = true,
+        ExecutablePath = "/usr/bin/chromium-browser",
         Args = new[] { "--no-sandbox", "--disable-setuid-sandbox" }
     });
 

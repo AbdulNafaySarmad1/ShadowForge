@@ -59,7 +59,7 @@ ShadowForge/
 ## Quick Start
 
 ### Prerequisites
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/8)
 - (Optional) Free API keys — app runs with demo data without them
 
 ### 1. Get free API keys
