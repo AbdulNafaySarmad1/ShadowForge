@@ -1,5 +1,5 @@
 # ShadowForge 🔥
-### Enterprise-Grade Adversary Emulation Platform · C# / .NET 8 / Blazor Server
+### Enterprise-Grade Adversary Emulation Platform · C# / .NET 10 / Blazor Server
 
 > A modular cybersecurity simulation dashboard built as a C# OOP showcase project.
 > Pulls **live threat intelligence** from AlienVault OTX and AbuseIPDB.
