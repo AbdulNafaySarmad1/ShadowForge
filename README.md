@@ -1,3 +1,5 @@
+<p align="center"><img src="shadowforge.jpeg" width="200"></p>
+
 # ShadowForge 🔥
 ### Enterprise-Grade Adversary Emulation Platform · C# / .NET 10 / Blazor Server
 
